@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
 import { timKopiApi } from '../gasApi';
 
 const DRAFT_KEY = "timkopi_checkout_draft_v1";
@@ -90,7 +89,7 @@ export default function HomePage() {
   const [initialDraft] = useState(() => loadDraft());
   const [branches, setBranches] = useState(FALLBACK_CABANG);
   const [menuList, setMenuList] = useState(FALLBACK_MENU);
-  const [activeTab, setActiveTab] = useState('menu'); // 'menu' | 'reservasi' | 'cabang'
+  const [activeTab, setActiveTab] = useState('menu');
   const [selectedCategory, setSelectedCategory] = useState('Semua');
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -138,7 +137,7 @@ export default function HomePage() {
           );
         }
       } catch (err) {
-        // Gunakan fallback data jika GAS belum diisi URL
+        // Gunakan fallback data jika offline
       }
     };
     fetchInit();
@@ -356,7 +355,7 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-[#120b08] text-stone-100 pb-28">
-      {/* HEADER */}
+      {/* HEADER PELANGGAN (BERSIH TANPA TOMBOL ADMIN) */}
       <header className="sticky top-0 z-30 bg-[#180f0b]/90 backdrop-blur-md border-b border-amber-800/30">
         <div className="max-w-5xl mx-auto px-4 py-3.5 flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
@@ -371,14 +370,14 @@ export default function HomePage() {
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            <Link
-              to="/admin"
-              className="bg-stone-800/80 hover:bg-stone-700 border border-amber-700/40 text-amber-200 text-xs font-semibold px-3 py-2 rounded-xl transition"
-            >
-              ⚙️ Kasir / QR
-            </Link>
-          </div>
+          <a
+            href={`https://wa.me/${DEFAULT_WA}`}
+            target="_blank"
+            rel="noreferrer"
+            className="bg-emerald-700/25 hover:bg-emerald-700/40 border border-emerald-500/40 text-emerald-300 text-xs font-semibold px-3.5 py-2 rounded-xl transition flex items-center gap-1.5"
+          >
+            <span>💬</span> Hubungi Kami
+          </a>
         </div>
       </header>
 

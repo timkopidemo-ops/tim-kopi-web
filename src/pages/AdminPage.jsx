@@ -2,8 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { timKopiApi } from '../gasApi';
 
+const ADMIN_PIN = "2026";
+
 export default function AdminPage() {
-  const [tab, setTab] = useState('orders'); // 'orders' | 'reservasi' | 'menu' | 'qr'
+  const [isAuthorized, setIsAuthorized] = useState(() => sessionStorage.getItem('tk_admin_auth') === 'true');
+  const [pinInput, setPinInput] = useState('');
+
+  const [tab, setTab] = useState('orders');
   const [loading, setLoading] = useState(true);
   const [branches, setBranches] = useState([
     { id: 'tpk-vintage', nama: 'TPK Vintage' },
@@ -16,7 +21,6 @@ export default function AdminPage() {
   const [menuList, setMenuList] = useState([]);
   const [branchFilter, setBranchFilter] = useState('Semua');
 
-  // Generator QR Meja States
   const [qrBranch, setQrBranch] = useState('tpk-vintage');
   const [qrTable, setQrTable] = useState('01');
 
@@ -36,8 +40,52 @@ export default function AdminPage() {
   };
 
   useEffect(() => {
-    fetchAdmin();
-  }, []);
+    if (isAuthorized) {
+      fetchAdmin();
+    }
+  }, [isAuthorized]);
+
+  if (!isAuthorized) {
+    return (
+      <div className="min-h-screen bg-[#120b08] text-stone-100 flex items-center justify-center p-4">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (pinInput === ADMIN_PIN) {
+              sessionStorage.setItem('tk_admin_auth', 'true');
+              setIsAuthorized(true);
+            } else {
+              alert('PIN Kasir salah!');
+            }
+          }}
+          className="bg-[#1b110d] border border-amber-700/40 rounded-2xl max-w-sm w-full p-6 text-center shadow-2xl"
+        >
+          <div className="w-12 h-12 rounded-2xl bg-amber-600/20 border border-amber-500/40 text-amber-400 flex items-center justify-center mx-auto mb-3 text-xl">
+            🔒
+          </div>
+          <h2 className="text-lg font-extrabold text-amber-50 mb-1">Akses Kasir & Owner</h2>
+          <p className="text-xs text-stone-400 mb-4">Masukkan PIN staf Tim Kopi untuk membuka panel.</p>
+          <input
+            type="password"
+            inputMode="numeric"
+            value={pinInput}
+            onChange={(e) => setPinInput(e.target.value)}
+            placeholder="Masukkan PIN"
+            className="w-full bg-[#120b08] border border-stone-700 rounded-xl p-3 text-center text-lg tracking-widest text-white mb-3 outline-none focus:border-amber-500"
+          />
+          <button
+            type="submit"
+            className="w-full bg-amber-600 hover:bg-amber-500 text-white font-bold py-2.5 rounded-xl text-sm transition mb-2"
+          >
+            Masuk Panel
+          </button>
+          <Link to="/" className="block text-xs text-stone-400 hover:text-stone-200 pt-1">
+            ← Kembali ke Halaman Pelanggan
+          </Link>
+        </form>
+      </div>
+    );
+  }
 
   const handleOrderStatus = async (orderId, newStatus) => {
     setOrders((prev) => prev.map((o) => (o.order_id === orderId ? { ...o, status: newStatus } : o)));
@@ -84,8 +132,18 @@ export default function AdminPage() {
               to="/"
               className="bg-amber-600 hover:bg-amber-500 text-xs font-bold px-3.5 py-2 rounded-xl text-white"
             >
-              ← Lihat Web Pelanggan
+              ← Web Pelanggan
             </Link>
+            <button
+              onClick={() => {
+                sessionStorage.removeItem('tk_admin_auth');
+                setIsAuthorized(false);
+                setPinInput('');
+              }}
+              className="bg-red-950/80 hover:bg-red-900 border border-red-700/50 text-xs font-bold px-3 py-2 rounded-xl text-red-300"
+            >
+              🔒 Kunci
+            </button>
           </div>
         </div>
       </header>
@@ -318,7 +376,6 @@ export default function AdminPage() {
               </div>
             </div>
 
-            {/* KARTU PREVIEW STIKER QR MEJA */}
             <div className="bg-amber-50 text-stone-950 rounded-2xl p-5 max-w-xs mx-auto shadow-2xl border-4 border-amber-700 mb-4">
               <p className="text-[11px] font-black tracking-widest uppercase text-amber-800">TIM KOPI ROASTERY</p>
               <h3 className="text-lg font-black uppercase">{selectedQrBranchObj?.nama}</h3>
